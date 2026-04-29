@@ -17,8 +17,8 @@
   },
   "devDependencies": {
     "nodemon": "^3.0.3"
-  }
+  },
   "scripts": {
-  "postinstall": "npm rebuild better-sqlite3 --build-from-source"
+    "postinstall": "npm rebuild better-sqlite3 --build-from-source"
   }
 }
