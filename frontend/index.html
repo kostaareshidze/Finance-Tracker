@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinanceOS — Personal Finance Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen" class="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <span class="logo-icon">◈</span>
+      <span class="logo-text">FinanceOS</span>
+    </div>
+    <p class="auth-tagline">Your money, visualized.</p>
+
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchAuthTab('login')">Sign In</button>
+      <button class="tab-btn" onclick="switchAuthTab('register')">Register</button>
+    </div>
+
+    <div id="auth-error" class="auth-error hidden"></div>
+
+    <form id="auth-form" onsubmit="handleAuth(event)">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="auth-username" placeholder="your_username" required autocomplete="username" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="auth-password" placeholder="••••••••" required autocomplete="current-password" />
+      </div>
+      <div id="register-extra" class="hidden">
+        <div class="form-group">
+          <label>Currency</label>
+          <select id="auth-currency">
+            <option value="USD">USD — US Dollar</option>
+            <option value="EUR">EUR — Euro</option>
+            <option value="GBP">GBP — British Pound</option>
+            <option value="JPY">JPY — Japanese Yen</option>
+            <option value="CAD">CAD — Canadian Dollar</option>
+            <option value="AUD">AUD — Australian Dollar</option>
+            <option value="GEL">GEL — Georgian Lari</option>
+          </select>
+        </div>
+      </div>
+      <button type="submit" class="btn-primary auth-submit" id="auth-submit-btn">Sign In</button>
+    </form>
+    <p class="auth-demo">Demo: username <code>demo</code> / password <code>demo1234</code></p>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" class="app hidden">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="logo-icon">◈</span>
+      <span class="logo-text">FinanceOS</span>
+      <button class="sidebar-close" onclick="toggleSidebar()">✕</button>
+    </div>
+
+    <ul class="nav-links">
+      <li><a href="#" class="nav-link active" data-page="dashboard" onclick="navigate('dashboard')">
+        <span class="nav-icon">⬡</span> Dashboard
+      </a></li>
+      <li><a href="#" class="nav-link" data-page="transactions" onclick="navigate('transactions')">
+        <span class="nav-icon">⇄</span> Transactions
+      </a></li>
+      <li><a href="#" class="nav-link" data-page="budgets" onclick="navigate('budgets')">
+        <span class="nav-icon">◎</span> Budgets
+      </a></li>
+      <li><a href="#" class="nav-link" data-page="yearly" onclick="navigate('yearly')">
+        <span class="nav-icon">▦</span> Yearly Stats
+      </a></li>
+      <li><a href="#" class="nav-link" data-page="categories" onclick="navigate('categories')">
+        <span class="nav-icon">◫</span> Categories
+      </a></li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar" id="user-avatar">U</div>
+        <div>
+          <div class="user-name" id="user-name">User</div>
+          <div class="user-currency" id="user-currency">USD</div>
+        </div>
+      </div>
+      <div class="sidebar-actions">
+        <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">◑</button>
+        <button class="icon-btn" onclick="logout()" title="Logout">⏻</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+    <header class="top-bar">
+      <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+      <div class="top-bar-title" id="page-title">Dashboard</div>
+      <div class="top-bar-actions">
+        <button class="btn-primary" onclick="openAddTransaction()">+ Add Transaction</button>
+      </div>
+    </header>
+
+    <!-- DASHBOARD PAGE -->
+    <div id="page-dashboard" class="page active">
+      <div class="month-selector">
+        <button onclick="changeMonth(-1)">←</button>
+        <span id="month-label">Loading...</span>
+        <button onclick="changeMonth(1)">→</button>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card income">
+          <div class="stat-label">Total Income</div>
+          <div class="stat-value" id="stat-income">—</div>
+        </div>
+        <div class="stat-card expense">
+          <div class="stat-label">Total Expenses</div>
+          <div class="stat-value" id="stat-expense">—</div>
+        </div>
+        <div class="stat-card balance">
+          <div class="stat-label">Net Balance</div>
+          <div class="stat-value" id="stat-balance">—</div>
+        </div>
+        <div class="stat-card neutral">
+          <div class="stat-label">Transactions</div>
+          <div class="stat-value" id="stat-count">—</div>
+        </div>
+      </div>
+
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-title">Income vs Expenses</div>
+          <canvas id="barChart"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Spending by Category</div>
+          <canvas id="pieChart"></canvas>
+        </div>
+      </div>
+
+      <div class="section-title">Recent Transactions</div>
+      <div id="recent-transactions" class="tx-list"></div>
+    </div>
+
+    <!-- TRANSACTIONS PAGE -->
+    <div id="page-transactions" class="page hidden">
+      <div class="filter-bar">
+        <input type="text" id="search-input" placeholder="Search transactions..." oninput="filterTransactions()" />
+        <select id="filter-type" onchange="filterTransactions()">
+          <option value="">All Types</option>
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+        <select id="filter-category" onchange="filterTransactions()">
+          <option value="">All Categories</option>
+        </select>
+        <input type="date" id="filter-start" onchange="filterTransactions()" />
+        <input type="date" id="filter-end" onchange="filterTransactions()" />
+        <button class="btn-outline" onclick="exportCSV()">↓ Export CSV</button>
+      </div>
+      <div id="tx-table-wrap">
+        <table class="tx-table">
+          <thead>
+            <tr><th>Date</th><th>Description</th><th>Category</th><th>Type</th><th>Amount</th><th></th></tr>
+          </thead>
+          <tbody id="tx-tbody"></tbody>
+        </table>
+      </div>
+      <div id="tx-pagination" class="pagination"></div>
+    </div>
+
+    <!-- BUDGETS PAGE -->
+    <div id="page-budgets" class="page hidden">
+      <div class="budget-header">
+        <div class="month-selector">
+          <button onclick="changeBudgetMonth(-1)">←</button>
+          <span id="budget-month-label">Loading...</span>
+          <button onclick="changeBudgetMonth(1)">→</button>
+        </div>
+        <button class="btn-primary" onclick="openAddBudget()">+ Set Budget</button>
+      </div>
+      <div id="budget-list" class="budget-list"></div>
+    </div>
+
+    <!-- YEARLY PAGE -->
+    <div id="page-yearly" class="page hidden">
+      <div class="year-selector">
+        <button onclick="changeYear(-1)">←</button>
+        <span id="year-label">2024</span>
+        <button onclick="changeYear(1)">→</button>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card income">
+          <div class="stat-label">Year Income</div>
+          <div class="stat-value" id="year-income">—</div>
+        </div>
+        <div class="stat-card expense">
+          <div class="stat-label">Year Expenses</div>
+          <div class="stat-value" id="year-expense">—</div>
+        </div>
+        <div class="stat-card balance">
+          <div class="stat-label">Net Savings</div>
+          <div class="stat-value" id="year-balance">—</div>
+        </div>
+        <div class="stat-card neutral">
+          <div class="stat-label">Savings Rate</div>
+          <div class="stat-value" id="year-rate">—</div>
+        </div>
+      </div>
+      <div class="chart-card full-width">
+        <div class="chart-title">Monthly Trend</div>
+        <canvas id="yearChart"></canvas>
+      </div>
+    </div>
+
+    <!-- CATEGORIES PAGE -->
+    <div id="page-categories" class="page hidden">
+      <div class="categories-header">
+        <button class="btn-primary" onclick="openAddCategory()">+ New Category</button>
+      </div>
+      <div id="category-grid" class="category-grid"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL -->
+<div id="modal-overlay" class="modal-overlay hidden" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3 id="modal-title">Add Transaction</h3>
+      <button onclick="closeModal()">✕</button>
+    </div>
+    <div id="modal-body" class="modal-body"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/app.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/transactions.js"></script>
+<script src="js/budgets.js"></script>
+<script src="js/yearly.js"></script>
+<script src="js/categories.js"></script>
+</body>
+</html>
