@@ -1,6 +1,6 @@
 // api.js — centralised fetch wrapper
 
-const API_BASE = "http://localhost:3001/api"; // FIXED (no more /api confusion)
+const API_BASE = "https://finance-tracker-1-oni0.onrender.com/api"; // FIXED (no more /api confusion)
 
 // helper: logout safely
 function logout() {
@@ -9,7 +9,7 @@ function logout() {
 }
 
 async function apiFetch(path, options = {}) {
-  const token = localStorage.getItem("ft_token"); // FIXED: consistent key
+  const token = localStorage.getItem("token"); // FIXED: consistent key
 
   const headers = {
     "Content-Type": "application/json",
@@ -68,7 +68,7 @@ async function apiDelete(path) {
 
 // CSV download (fixed + safe)
 async function apiDownload(path) {
-  const token = localStorage.getItem("ft_token");
+  const token = localStorage.getItem("token");
 
   if (!token) {
     alert("Not logged in");
