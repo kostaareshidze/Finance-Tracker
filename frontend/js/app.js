@@ -37,12 +37,15 @@ async function initApp(user) {
   categories = (await apiGet("/categories")) || [];
   navigate("dashboard");
 }
-
 function navigate(page) {
   currentPage = page;
   document.querySelectorAll(".page").forEach((p) => p.classList.add("hidden"));
   document.querySelectorAll(".nav-link").forEach((l) => {
     l.classList.toggle("active", l.dataset.page === page);
+  });
+  // sync mobile bottom nav
+  document.querySelectorAll(".mobile-nav-btn").forEach((b) => {
+    b.classList.toggle("active", b.dataset.page === page);
   });
   document.getElementById("page-" + page)?.classList.remove("hidden");
 
@@ -55,8 +58,7 @@ function navigate(page) {
   };
   document.getElementById("page-title").textContent = titles[page] || page;
 
-  // close sidebar on mobile
-  document.getElementById("sidebar").classList.remove("open");
+  closeSidebar(); // changed from: document.getElementById('sidebar').classList.remove('open')
 
   if (page === "dashboard") loadDashboard();
   if (page === "transactions") loadTransactions();
@@ -64,9 +66,16 @@ function navigate(page) {
   if (page === "yearly") loadYearly();
   if (page === "categories") loadCategories();
 }
+function closeSidebar() {
+  document.getElementById("sidebar").classList.remove("open");
+  document.getElementById("sidebar-backdrop")?.classList.remove("visible");
+}
 
 function toggleSidebar() {
-  document.getElementById("sidebar").classList.toggle("open");
+  const open = document.getElementById("sidebar").classList.toggle("open");
+  document
+    .getElementById("sidebar-backdrop")
+    ?.classList.toggle("visible", open);
 }
 
 function toggleTheme() {
