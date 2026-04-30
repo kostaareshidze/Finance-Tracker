@@ -45,7 +45,7 @@ async function handleAuth(e) {
     }
 
     // ✅ SAVE TOKEN
-    localStorage.setItem("ft_token", data.token);
+    localStorage.setItem("token", data.token);
     localStorage.setItem("ft_user", JSON.stringify(data.user));
 
     console.log("TOKEN SAVED:", localStorage.getItem("ft_token"));
@@ -58,14 +58,14 @@ async function handleAuth(e) {
 }
 
 function logout() {
-  localStorage.removeItem("ft_token");
+  localStorage.removeItem("token");
   localStorage.removeItem("ft_user");
   document.getElementById("app").classList.add("hidden");
   document.getElementById("auth-screen").classList.remove("hidden");
 }
 
 function checkAuth() {
-  const token = localStorage.getItem("ft_token");
+  const token = localStorage.getItem("token");
   const user = JSON.parse(localStorage.getItem("ft_user") || "null");
   if (token && user) {
     initApp(user);
